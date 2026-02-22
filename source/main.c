@@ -1,11 +1,11 @@
-// C Standard Library Includes 
+// Standard library headers
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
 #include <math.h>
 #include <stdbool.h>
 
-// Capstone Internal Headers - all present in drivers directory
+// Capstone internal headers - all present in drivers directory
 #include "board.h"
 #include "fsl_uart.h"
 #include "lcd_4_bit.h"
@@ -29,9 +29,9 @@
 #define MAIN_RING_BUFFER_SIZE 512
 #define RX_BUFFER_SIZE 512
 
-const char onlyRMC[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
+const char ONLY_RMC[] = "$PMTK314,0,1,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0*29\r\n";
 
-int Threshold[NUM_RANGE_STEPS] = { 500, 700, 800, 1000, 200, 0 };
+int threshold[NUM_RANGE_STEPS] = { 500, 700, 800, 1000, 200, 0 };
 
 const int Speeds[NUM_RANGE_STEPS] = { 100, 80, 60, 40, 20, 0 };
 volatile uint8_t duty = 0;
@@ -43,23 +43,25 @@ volatile uint8_t lin_input = 0;
 volatile uint8_t encoder_input =0;
 
 
-void INIT_PINS() {
+void init_pins() {
 	SIM->SCGC5 |= SIM_SCGC5_PORTD_MASK|SIM_SCGC5_PORTB_MASK;
-	//Object
+	
+	// object
 	PORTD->PCR[0] = PORT_PCR_MUX(1) |
 	PORT_PCR_PS_MASK |
-	PORT_PCR_PE_MASK |   // pull-UP
+	PORT_PCR_PE_MASK |   // pull-up
 			PORT_PCR_IRQC(0x0B);
-	//Line
+
+	// line
 	PORTD->PCR[2] = PORT_PCR_MUX(1) |
 	PORT_PCR_PS_MASK |
-	PORT_PCR_PE_MASK |   // pull-UP
+	PORT_PCR_PE_MASK |   // pull-up
 			PORT_PCR_IRQC(0x0B);
 
-	PTD->PDDR &= ~(MASK(0) | MASK(2)); //INPUT
+	PTD->PDDR &= ~(MASK(0) | MASK(2)); // input
 }
 
-void Init_PWM() {
+void init_pwm() {
 	// System Clock Gating Control Register 5 enable to port A
 	SIM->SCGC5 |= SIM_SCGC5_PORTA_MASK | SIM_SCGC5_PORTE_MASK | SIM_SCGC5_PORTB_MASK;
 	// System Clock Gating Control Register 6 enable to TPM0
@@ -143,6 +145,7 @@ void Set_PWM_Value(uint8_t duty, int8_t dir) {
 		TPM1->CONTROLS[0].CnV = 0; //Pin 13
 	}
 }
+
 void set_lin_value(uint8_t drive, int8_t control){
 	if(control == 1){          // Extend
 	        TPM0->CONTROLS[3].CnV = 0;
@@ -171,6 +174,7 @@ void init_pot(void){
 
 	ADC0->SC1[0] = ADC_SC1_ADCH(31);    	// Disable module initially. 31 disables conversion.
 }
+
 void init_encoder(void){
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
 		// Initialize pot GPIO
@@ -184,68 +188,68 @@ void init_encoder(void){
 
 		ADC0->SC1[0] = ADC_SC1_ADCH(31);    	// Disable module initially. 31 disables conversion.
 }
+
 void init_lin_pot(void){
+
 	SIM->SCGC6 |= SIM_SCGC6_ADC0_MASK;
-		// Initialize pot GPIO
-		PORTB->PCR[1] &= ~PORT_PCR_MUX_MASK;
-		PORTB->PCR[1] |= PORT_PCR_MUX(0);  // Analog mode
 
-		// Configure ADC0
-		// Use default clock (bus clock), 8-bit resolution, single-ended mode
-		ADC0->CFG1 = ADC_CFG1_MODE(0) |     	// 8-bit mode
-					 ADC_CFG1_ADICLK(0);    	// Bus clock
+	// initialize pot GPIO
+	PORTB->PCR[1] &= ~PORT_PCR_MUX_MASK;
+	PORTB->PCR[1] |= PORT_PCR_MUX(0);  // analog mode
 
-		ADC0->SC1[0] = ADC_SC1_ADCH(31);    	// Disable module initially. 31 disables conversion.
+	// configure ADC0
+	// use default clock (bus clock), 8-bit resolution, single-ended mode
+	ADC0->CFG1 = ADC_CFG1_MODE(0) |     	// 8-bit mode
+					ADC_CFG1_ADICLK(0);    	// bus clock
+
+	ADC0->SC1[0] = ADC_SC1_ADCH(31);    	// disable module initially, 31 disables conversion.
 }
 
 static uint8_t ADC_Read(void){
-    // Start conversion on specified channel
-    ADC0->SC1[0] = ADC_SC1_ADCH(8);
+    
+    ADC0->SC1[0] = ADC_SC1_ADCH(8);  // start conversion on specified channel
+    while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK));    // wait for conversion complete
 
-    // Wait for conversion complete
-    while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK));
-
-    // Return result
-    return (uint8_t)ADC0->R[0];
+    return (uint8_t)ADC0->R[0];   // return result
 }
+
 static uint8_t lin_actuator_read(void){
-    // Start conversion on specified channel
+
     ADC0->SC1[0] = ADC_SC1_ADCH(9);
-
-    // Wait for conversion complete
     while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK));
 
-    // Return result
     return (uint8_t)ADC0->R[0];
 }
+
 static uint8_t encoder_read(void){
-    // Start conversion on specified channel
+
     ADC0->SC1[0] = ADC_SC1_ADCH(12);
+    while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK)); 
 
-    // Wait for conversion complete
-    while (!(ADC0->SC1[0] & ADC_SC1_COCO_MASK));
-
-    // Return result
-    return (uint8_t)ADC0->R[0];
+    return (uint8_t)ADC0->R[0]; 
 }
-void Data_Output(char *string) {
+
+void data_output(char *string) {
 
 	int i = 0;
 	int j = 0;
-	Set_Cursor(0, 0);
+	set_cursor(0, 0);
+
 	while (*string && i < 16 && j < 2) {
+
 		if (j == 0 && i >= 7 && (*string == ' ')) {
 			i = 0;
 			j = 1;
-			Set_Cursor(i, j);
-
+			set_cursor(i, j);
 		}
+
 		if (j == 1 && i >= 7 && (*string == ' ')) {
 			i = 0;
 			j = 0;
-			Set_Cursor(i, j);
-			Clear_LCD();
+			set_cursor(i, j);
+			clear_lcd();
 		}
+
 		lcd_putchar(*string++);
 		i++;
 
@@ -254,11 +258,11 @@ void Data_Output(char *string) {
 			i = 0;
 			if (j == 2 && (*string != '\0')) {
 				j = 0;
-				Clear_LCD();
+				clear_lcd();
 			}
 		}
 
-		Set_Cursor(i, j);
+		set_cursor(i, j);
 
 	}
 }
@@ -272,10 +276,11 @@ int main(void) {
 
 	BOARD_InitPins();
 	BOARD_BootClockRUN();
+
 	Init_RGB_LEDs();
 	//Init_PIT((6000 * 1000));
-	Init_PWM();
-	INIT_PINS();
+	init_pwm();
+	init_pins();
 
 	Control_RGB_LEDs(0, 1, 0);
 
@@ -286,64 +291,60 @@ int main(void) {
 	init_encoder();
 	init_lin_pot();
 
-	/*
-	 * Main While Loop for control statement prints and data handling
-	 */
-
 	while (1) {
+
 		Set_PWM_Value(duty, dir);
 		set_lin_value(drive,control);
+
 		adc_input = ADC_Read();
 		lin_input = lin_actuator_read();
 		encoder_input = encoder_read();
+
 		char buf[128];
+
 		if (adc_input <= 100 && adc_input >= 0){
-			duty = (100-adc_input) * 255 / 200;
+			duty = (100 - adc_input) * 255 / 200;
 			dir = 1;
 			Control_RGB_LEDs(0,1,0);
-		}
-		else if(adc_input >= 155 && adc_input <= 255){
+		} else if(adc_input >= 155 && adc_input <= 255){
 			duty = (adc_input - 155) * 255 / 200;
 			dir = -1;
 			Control_RGB_LEDs(0,0,1);
-		}
-		else {
+		} else {
 			duty = 0;
 			dir = 0;
 			Control_RGB_LEDs(1,0,0);
 		}
-		//snprintf(buf,sizeof(buf),"Encoder Read: %d", encoder_input);
+
+		// snprintf(buf,sizeof(buf),"Encoder Read: %d", encoder_input);
 		if (lin_input <= 100 && lin_input >= 0){
-			drive = (100-lin_input) * 255 / 100;
+			drive = (100 - lin_input) * 255 / 100;
 			control = 1;
 			Control_RGB_LEDs(0,1,0);
-
-		}else if(lin_input >= 155 && lin_input <= 255){
+		} else if(lin_input >= 155 && lin_input <= 255){
 			drive = (lin_input - 155) * 255 / 100;
 			control = -1;
 			Control_RGB_LEDs(0,0,1);
-		}else {
+		} else {
 			drive = 0;
 			control = 0;
 			Control_RGB_LEDs(1,0,0);
 		}
-		//Data_Output(buf);
+		// data_output(buf);
 
 	}
 }
+
 void PIT_IRQHandler() {
 
-	//clear pending IRQ
-	NVIC_ClearPendingIRQ(PIT_IRQn);
+
+	NVIC_ClearPendingIRQ(PIT_IRQn); // clear pending IRQ
 
 	// check to see which channel triggered interrupt
-	if (PIT->CHANNEL[0].TFLG & PIT_TFLG_TIF_MASK) { //Check against bit 31 which corresponds to timer interrupt flag
+	if (PIT->CHANNEL[0].TFLG & PIT_TFLG_TIF_MASK) { // check against bit 31 which corresponds to timer interrupt flag
 		// clear status flag for timer channel 0
-		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK; //Write 1 to clear the flag
-
-
-	//duty=0;
-
+		PIT->CHANNEL[0].TFLG &= PIT_TFLG_TIF_MASK; // write 1 to clear the flag
+		// duty = 0;	
 	} else if (PIT->CHANNEL[1].TFLG & PIT_TFLG_TIF_MASK) {
 		// clear status flag for timer channel 1
 		PIT->CHANNEL[1].TFLG &= PIT_TFLG_TIF_MASK;
