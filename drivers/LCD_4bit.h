@@ -66,9 +66,9 @@
 #define LCD_BUSY_FLAG_MASK				(0x80)
 
 /******************************************************************************/
-void init_lcd (void);
-void set_cursor (uint8_t column, uint8_t row);
-void clear_lcd(void);
-void print_lcd (char *string);
+void Init_LCD (void);
+void Set_Cursor (uint8_t column, uint8_t row);
+void Clear_LCD(void);
+void Print_LCD (char *string);
 void lcd_putchar (char c);
 
