@@ -1,0 +1,7 @@
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/reciever-board-communication-switch/CMSIS/core_cm0plus.h:745:22:NVIC_EnableIRQ	16	static
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/reciever-board-communication-switch/CMSIS/core_cm0plus.h:791:22:NVIC_ClearPendingIRQ	16	static
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/reciever-board-communication-switch/drivers/fsl_common.h:212:20:EnableIRQ	16	static
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/reciever-board-communication-switch/drivers/fsl_uart.h:555:23:UART_ReadByte	16	static
+../source/main.c:43:5:main	24	static
+../source/main.c:141:6:PIT_IRQHandler	8	static
+../source/main.c:168:6:UART2_IRQHandler	24	static

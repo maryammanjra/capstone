@@ -1,0 +1,7 @@
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/transmitter-board-communication-switch/CMSIS/core_cm0plus.h:745:22:NVIC_EnableIRQ	16	static
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/transmitter-board-communication-switch/CMSIS/core_cm0plus.h:791:22:NVIC_ClearPendingIRQ	16	static
+/Users/maryam/Documents/MCUXpressoIDE_25.6.136/workspace/transmitter-board-communication-switch/CMSIS/core_cm0plus.h:804:22:NVIC_SetPriority	24	static
+../source/timers.c:8:6:Init_PIT	16	static
+../source/timers.c:32:6:Start_PIT	8	static
+../source/timers.c:37:6:Stop_PIT	8	static
+../source/timers.c:41:6:Set_Time	16	static
