@@ -12,8 +12,6 @@
 
 
 sensor_status_t g_sensor_status;
-
-/* Globals required by uart.h (TX board discards incoming bytes) */
 ringbuf_t         rx_ring;
 volatile uint32_t rx_overflow_count;
 
@@ -57,9 +55,7 @@ static void gps_read(uint8_t *valid, int32_t *lat_deg7, int32_t *lon_deg7)
     *lon_deg7 = 0;
 }
 
-/* ====================================================================
- * sensors_init_all / update_sensor_status
- * ==================================================================== */
+//sensors_init_all / update_sensor_status
 
 static void sensors_init_all(void)
 {
@@ -89,10 +85,8 @@ static void update_sensor_status(void)
              &g_sensor_status.lon_deg7);
 }
 
-/* ====================================================================
- * debug_print_tx
- * Format: [TX] IR=110010 US=0011 TOF=1 GPS=1 LAT=+374230000 LON=-1220840000
- * ==================================================================== */
+// * debug_print_tx
+
 
 static void debug_putdec32(int32_t n)
 {
@@ -129,10 +123,6 @@ static void debug_print_tx(const snapshot_t *s)
     PRINTF("\r\n");
 }
 
-/* ====================================================================
- * main
- * ==================================================================== */
-
 int main(void)
 {
     uint8_t    seq        = 0;
@@ -160,8 +150,6 @@ int main(void)
         RGB_GREEN_ON();  delay_ms(150);
         RGB_GREEN_OFF(); delay_ms(150);
     }
-
-    PRINTF("[SENSOR] Sensor board ready. Polling all sensors at 10 Hz.\r\n");
 
     while (1) {
         /* 1. Read all sensors → g_sensor_status */
