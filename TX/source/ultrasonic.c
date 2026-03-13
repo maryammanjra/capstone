@@ -60,7 +60,7 @@ static uint32_t MeasureUs_Single(GPIO_Type *trigGPIO,
     trigGPIO->PCOR = trigMask;
 
     while (!g_got_rise) {
-        if ((Timer_Micros() - start_us) > 30000u) {
+        if ((Timer_Micros() - start_us) > 3000u) {
             g_active_echoMask = 0;
             return 0u;
         }
@@ -68,7 +68,7 @@ static uint32_t MeasureUs_Single(GPIO_Type *trigGPIO,
     }
 
     while (!g_done) {
-        if ((Timer_Micros() - start_us) > 60000u) {
+        if ((Timer_Micros() - start_us) > 6000u) {
             g_active_echoMask = 0;
             return 0u;
         }
@@ -140,3 +140,4 @@ uint32_t Ultrasonic_MeasureCm_Back(void)
 
     return us ? (us / 58u) : 0u;
 }
+
